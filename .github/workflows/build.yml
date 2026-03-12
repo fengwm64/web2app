@@ -3,11 +3,13 @@ name: Build APK
 on:
   push:
     branches: [ main, master ]
-  workflow_dispatch:   # 支持手动触发
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
 
     steps:
       - name: Checkout
@@ -17,7 +19,7 @@ jobs:
         id: cfg
         run: |
           source <(grep -v '^#' config.properties | sed 's/ *= */=/g')
-          echo "app_name=${APP_NAME}"     >> $GITHUB_OUTPUT
+          echo "app_name=${APP_NAME}"         >> $GITHUB_OUTPUT
           echo "version_name=${VERSION_NAME}" >> $GITHUB_OUTPUT
 
       - name: Set up JDK 17
@@ -31,12 +33,12 @@ jobs:
         run: chmod +x gradlew
 
       # ── 有签名 Secrets → 构建 Release APK ──────────────────────────────────
-      - name: Decode keystore (if secret exists)
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+      - name: Decode keystore
+        if: env.HAS_KEYSTORE == 'true'
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.jks
 
       - name: Build Release APK (signed)
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: env.HAS_KEYSTORE == 'true'
         env:
           KEYSTORE_PATH:      ${{ github.workspace }}/release.jks
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -45,7 +47,7 @@ jobs:
         run: ./gradlew assembleRelease --no-daemon
 
       - name: Upload Release APK
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: env.HAS_KEYSTORE == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.cfg.outputs.app_name }}-v${{ steps.cfg.outputs.version_name }}-release
@@ -54,11 +56,11 @@ jobs:
 
       # ── 没有 Secrets → 构建 Debug APK ──────────────────────────────────────
       - name: Build Debug APK (unsigned)
-        if: ${{ secrets.KEYSTORE_BASE64 == '' }}
+        if: env.HAS_KEYSTORE == 'false'
         run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload Debug APK
-        if: ${{ secrets.KEYSTORE_BASE64 == '' }}
+        if: env.HAS_KEYSTORE == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.cfg.outputs.app_name }}-v${{ steps.cfg.outputs.version_name }}-debug
