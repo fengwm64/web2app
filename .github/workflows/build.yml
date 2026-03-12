@@ -5,6 +5,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,7 +21,8 @@ jobs:
       - name: Read config.properties
         id: cfg
         run: |
-          source <(grep -v '^#' config.properties | sed 's/ *= */=/g')
+          APP_NAME=$(grep '^APP_NAME=' config.properties | cut -d'=' -f2-)
+          VERSION_NAME=$(grep '^VERSION_NAME=' config.properties | cut -d'=' -f2-)
           echo "app_name=${APP_NAME}"         >> $GITHUB_OUTPUT
           echo "version_name=${VERSION_NAME}" >> $GITHUB_OUTPUT
 
