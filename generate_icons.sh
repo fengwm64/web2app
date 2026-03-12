@@ -1,5 +1,5 @@
 #!/bin/bash
-# 根据 logo.png 生成所有尺寸的 Android 图标
+# 根据 logo.png 或 LOGO_URL 生成所有尺寸的 Android 图标
 # 用法: ./generate_icons.sh [logo路径]  默认读取项目根目录的 logo.png
 
 set -e
@@ -7,12 +7,26 @@ set -e
 LOGO="${1:-logo.png}"
 RES_DIR="app/src/main/res"
 
+# ── 如果本地没有 logo.png，尝试从 LOGO_URL 下载 ───────────────────────────
 if [ ! -f "$LOGO" ]; then
-    echo "跳过图标生成：未找到 $LOGO"
-    exit 0
+    LOGO_URL=$(grep '^LOGO_URL=' config.properties 2>/dev/null | cut -d'=' -f2-)
+    LOGO_URL=$(echo "$LOGO_URL" | tr -d '[:space:]')
+
+    if [ -n "$LOGO_URL" ]; then
+        echo "==> 从 URL 下载图标：$LOGO_URL"
+        LOGO="/tmp/web2app_logo_download"
+        curl -fsSL "$LOGO_URL" -o "$LOGO" || {
+            echo "警告：图标下载失败，跳过图标生成"
+            exit 0
+        }
+        echo "   下载完成 ✓"
+    else
+        echo "跳过图标生成：未找到 logo.png，且 LOGO_URL 未配置"
+        exit 0
+    fi
 fi
 
-# 检测 ImageMagick 命令（兼容 v6 的 convert 和 v7 的 magick）
+# ── 检测 ImageMagick 命令（兼容 v6 的 convert 和 v7 的 magick）──────────────
 if command -v magick &>/dev/null; then
     IM="magick"
 elif command -v convert &>/dev/null; then
@@ -24,9 +38,9 @@ else
     exit 0
 fi
 
-# 读取背景色
+# ── 读取背景色 ────────────────────────────────────────────────────────────────
 BG_COLOR=$(grep '^ICON_BG_COLOR=' config.properties 2>/dev/null | cut -d'=' -f2-)
-BG_COLOR="${BG_COLOR:-#1a1a2e}"
+BG_COLOR=$(echo "${BG_COLOR:-#1a1a2e}" | tr -d '[:space:]')
 
 echo "==> 生成 Android 图标（背景色: ${BG_COLOR}）..."
 

@@ -41,11 +41,18 @@ INITIAL_SCALE=100
 ICON_BG_COLOR=#1a1a2e
 ```
 
-**第三步（可选）：上传自定义图标**
+**第三步（可选）：自定义图标**
 
-将一张 **512×512px** 的图片命名为 `logo.png`，放到项目根目录。支持透明背景（PNG）。
+二选一：
 
-构建时会自动生成所有尺寸的启动图标，不上传则使用默认图标。
+- **方式一（推荐）**：将 **512×512px** 的图片命名为 `logo.png`，放到项目根目录
+- **方式二**：在 `config.properties` 里填写图片 URL
+
+```properties
+LOGO_URL=https://example.com/your-logo.png
+```
+
+支持 PNG / JPG，推荐使用透明背景的 PNG。本地 `logo.png` 优先级高于 `LOGO_URL`。构建时自动生成所有尺寸，不配置则使用默认图标。
 
 **第四步：推送，等待构建完成**
 
@@ -131,11 +138,18 @@ INITIAL_SCALE=100
 ICON_BG_COLOR=#1a1a2e
 ```
 
-**Step 3 (optional): Add a custom icon**
+**Step 3 (optional): Custom icon**
 
-Place a **512×512px** image named `logo.png` in the project root. Transparent backgrounds (PNG) are supported.
+Choose one:
 
-All launcher icon sizes are generated automatically at build time. If omitted, the default icon is used.
+- **Option A (recommended)**: Place a **512×512px** image named `logo.png` in the project root
+- **Option B**: Set an image URL in `config.properties`
+
+```properties
+LOGO_URL=https://example.com/your-logo.png
+```
+
+PNG/JPG supported. Transparent PNG recommended. Local `logo.png` takes priority over `LOGO_URL`. All icon sizes are generated automatically. If neither is provided, the default icon is used.
 
 **Step 4: Push and wait for the build**
 
