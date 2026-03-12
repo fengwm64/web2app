@@ -34,7 +34,15 @@ jobs:
           cache: gradle
 
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        run: chmod +x gradlew generate_icons.sh
+
+      - name: Install ImageMagick
+        if: hashFiles('logo.png') != ''
+        run: sudo apt-get install -y imagemagick
+
+      - name: Generate launcher icons from logo.png
+        if: hashFiles('logo.png') != ''
+        run: ./generate_icons.sh
 
       # ── 有签名 Secrets → 构建 Release APK ──────────────────────────────────
       - name: Decode keystore

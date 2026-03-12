@@ -51,6 +51,10 @@ export ANDROID_HOME="$ANDROID_HOME"
 export ANDROID_SDK_ROOT="$ANDROID_HOME"
 
 cd "$(dirname "$0")"
+
+# 4. 生成图标（如果存在 logo.png）
+bash generate_icons.sh
+
 chmod +x gradlew
 ./gradlew assembleDebug --no-daemon
 

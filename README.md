@@ -36,9 +36,18 @@ VERSION_NAME=1.0
 
 # 初始缩放比例（100 = 默认，90 = 缩小到90%）
 INITIAL_SCALE=100
+
+# 图标背景色（logo.png 有透明背景时生效）
+ICON_BG_COLOR=#1a1a2e
 ```
 
-**第三步：推送，等待构建完成**
+**第三步（可选）：上传自定义图标**
+
+将一张 **512×512px** 的图片命名为 `logo.png`，放到项目根目录。支持透明背景（PNG）。
+
+构建时会自动生成所有尺寸的启动图标，不上传则使用默认图标。
+
+**第四步：推送，等待构建完成**
 
 推送到 `main` 分支后，GitHub Actions 自动构建（约 3~5 分钟）。
 
@@ -84,6 +93,7 @@ base64 -w 0 my-release.jks            # Linux
 - 支持文件上传（`<input type="file">`）
 - 支持文件下载（系统 DownloadManager）
 - 启动页（Splash Screen）
+- 自定义图标（放入 `logo.png` 自动生成所有尺寸）
 - 最低支持 Android 5.0（API 21）
 
 ---
@@ -116,9 +126,18 @@ VERSION_NAME=1.0
 
 # Initial zoom level (100 = default, 90 = 90% zoom)
 INITIAL_SCALE=100
+
+# Icon background color (used when logo.png has a transparent background)
+ICON_BG_COLOR=#1a1a2e
 ```
 
-**Step 3: Push and wait for the build**
+**Step 3 (optional): Add a custom icon**
+
+Place a **512×512px** image named `logo.png` in the project root. Transparent backgrounds (PNG) are supported.
+
+All launcher icon sizes are generated automatically at build time. If omitted, the default icon is used.
+
+**Step 4: Push and wait for the build**
 
 After pushing to the `main` branch, GitHub Actions will build automatically (~3–5 min).
 
@@ -164,4 +183,5 @@ base64 -w 0 my-release.jks            # Linux
 - File upload support (`<input type="file">`)
 - File download support (via system DownloadManager)
 - Splash screen on launch
+- Custom icon (place `logo.png` in root, all sizes auto-generated)
 - Minimum Android 5.0 (API 21)
