@@ -3,17 +3,18 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
-// ── 读取根目录 config.properties ────────────────────────────────────────────
+// ── 读取根目录 config.properties（UTF-8，支持中文）──────────────────────────
 def cfg = new Properties()
-rootProject.file("config.properties").withInputStream { cfg.load(it) }
+rootProject.file("config.properties").newReader("UTF-8").withCloseable { cfg.load(it) }
 
-def cfgUrl          = cfg.getProperty('TARGET_URL',    'https://example.com')
-def cfgAppName      = cfg.getProperty('APP_NAME',      'WebApp')
-def cfgAppId        = cfg.getProperty('APP_ID',        'com.webtoapp.app')
-def cfgVersionCode  = cfg.getProperty('VERSION_CODE',  '1').toInteger()
-def cfgVersionName  = cfg.getProperty('VERSION_NAME',  '1.0')
-def cfgInitialScale = cfg.getProperty('INITIAL_SCALE', '100').toInteger()
+def cfgUrl          = cfg.getProperty('TARGET_URL',     'https://example.com')
+def cfgAppName      = cfg.getProperty('APP_NAME',       'WebApp')
+def cfgAppId        = cfg.getProperty('APP_ID',         'com.webtoapp.app')
+def cfgVersionCode  = cfg.getProperty('VERSION_CODE',   '1').toInteger()
+def cfgVersionName  = cfg.getProperty('VERSION_NAME',   '1.0')
+def cfgInitialScale = cfg.getProperty('INITIAL_SCALE',  '100').toInteger()
 def cfgIconBgColor  = cfg.getProperty('ICON_BG_COLOR',  '#1a1a2e')
+def cfgTagline      = cfg.getProperty('SPLASH_TAGLINE', '')
 // ────────────────────────────────────────────────────────────────────────────
 
 // ── 签名配置（本地 .jks 文件 或 CI 环境变量）───────────────────────────────
@@ -38,6 +39,7 @@ android {
         buildConfigField "String", "TARGET_URL",    "\"${cfgUrl}\""
         buildConfigField "int",    "INITIAL_SCALE", "${cfgInitialScale}"
         resValue         "string", "app_name",        cfgAppName
+        resValue         "string", "splash_tagline",  cfgTagline
         resValue         "color",  "icon_bg_color",  cfgIconBgColor
     }
 
