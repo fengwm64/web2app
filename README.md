@@ -66,30 +66,50 @@ LOGO_URL=https://example.com/your-logo.png
 
 不配置签名会自动构建 **Debug APK**（可直接安装，但不能上架应用商店）。
 
-如需签名的 **Release APK**，进入仓库 **Settings → Secrets and variables → Actions**，添加以下 4 个 Secret：
+如需签名的 **Release APK**，需要先生成签名文件，再将相关信息填入 GitHub Secrets。
 
-| Secret 名称 | 说明 |
-|---|---|
-| `KEYSTORE_BASE64` | `.jks` 签名文件的 base64 内容 |
-| `KEY_STORE_PASSWORD` | keystore 密码 |
-| `KEY_ALIAS` | key 别名 |
-| `KEY_PASSWORD` | key 密码 |
+#### 第一步：生成签名文件（.jks）
 
-**生成签名文件：**
+签名文件相当于你的"开发者身份证"，用于证明 APK 由你发布。**只需生成一次，请务必妥善保存。**
 
 ```bash
-# 生成 .jks 文件（只需执行一次，请妥善保存！）
-keytool -genkeypair -alias mykey -keyalg RSA -keysize 2048 -validity 10000 \
+keytool -genkeypair \
+  -alias mykey \
+  -keyalg RSA -keysize 2048 -validity 10000 \
   -keystore my-release.jks \
   -dname "CN=My App, O=My Company, C=CN" \
-  -storepass yourpassword -keypass yourpassword
-
-# 转为 base64 字符串，复制到 KEYSTORE_BASE64 secret
-base64 -i my-release.jks | pbcopy     # macOS（自动复制到剪贴板）
-base64 -w 0 my-release.jks            # Linux
+  -storepass yourpassword \
+  -keypass yourpassword
 ```
 
-> ⚠️ `.jks` 文件和密码请务必单独备份。上架后如果丢失，将无法发布更新。
+参数说明：
+- `-alias mykey` — key 的名字，可以随意起，记住即可（对应 `KEY_ALIAS`）
+- `-keystore my-release.jks` — 生成的签名文件名
+- `-storepass yourpassword` — 打开签名文件的密码（对应 `KEY_STORE_PASSWORD`）
+- `-keypass yourpassword` — key 自身的密码，通常与 storepass 相同（对应 `KEY_PASSWORD`）
+- `-validity 10000` — 有效期天数，10000 天约 27 年
+
+#### 第二步：将 .jks 文件转为文字（base64）
+
+GitHub Secrets 只能存储文字，需要把二进制的 .jks 文件编码成字符串：
+
+```bash
+base64 -i my-release.jks | pbcopy     # macOS（结果自动复制到剪贴板）
+base64 -w 0 my-release.jks            # Linux（手动复制输出内容）
+```
+
+#### 第三步：填入 GitHub Secrets
+
+进入仓库 **Settings → Secrets and variables → Actions → New repository secret**，依次添加：
+
+| Secret 名称 | 填入的内容 | 说明 |
+|---|---|---|
+| `KEYSTORE_BASE64` | 上一步 base64 命令的输出 | .jks 文件的编码内容，一长串字母数字 |
+| `KEY_STORE_PASSWORD` | 生成时 `-storepass` 的值 | 打开签名文件的密码 |
+| `KEY_ALIAS` | 生成时 `-alias` 的值 | key 的名字，如 `mykey` |
+| `KEY_PASSWORD` | 生成时 `-keypass` 的值 | key 自身的密码，通常与 `KEY_STORE_PASSWORD` 相同 |
+
+> ⚠️ `.jks` 文件和密码请单独备份到安全的地方（如密码管理器）。应用上架后，所有更新版本必须用同一个签名文件，一旦丢失将永远无法发布新版本。
 
 ---
 
@@ -163,30 +183,50 @@ Go to your repo → **Actions** → latest workflow run → **Artifacts** at the
 
 Without signing secrets, a **Debug APK** is built automatically (installable directly, but not publishable to stores).
 
-For a signed **Release APK**, go to **Settings → Secrets and variables → Actions** and add these 4 secrets:
+For a signed **Release APK**, generate a keystore first, then add the details as GitHub Secrets.
 
-| Secret | Description |
-|---|---|
-| `KEYSTORE_BASE64` | Base64-encoded content of your `.jks` keystore file |
-| `KEY_STORE_PASSWORD` | Keystore password |
-| `KEY_ALIAS` | Key alias |
-| `KEY_PASSWORD` | Key password |
+#### Step 1: Generate a keystore (.jks)
 
-**Generate a keystore:**
+A keystore is your "developer identity" — it proves the APK was published by you. **Generate it once and keep it safe forever.**
 
 ```bash
-# Generate .jks file (do this once and keep it safe!)
-keytool -genkeypair -alias mykey -keyalg RSA -keysize 2048 -validity 10000 \
+keytool -genkeypair \
+  -alias mykey \
+  -keyalg RSA -keysize 2048 -validity 10000 \
   -keystore my-release.jks \
   -dname "CN=My App, O=My Company, C=US" \
-  -storepass yourpassword -keypass yourpassword
-
-# Encode as base64 and paste into KEYSTORE_BASE64 secret
-base64 -i my-release.jks | pbcopy     # macOS (copies to clipboard)
-base64 -w 0 my-release.jks            # Linux
+  -storepass yourpassword \
+  -keypass yourpassword
 ```
 
-> ⚠️ Back up your `.jks` file and passwords separately. If lost after publishing, you will not be able to release updates.
+Parameter guide:
+- `-alias mykey` — a name for your key, anything you like (this becomes `KEY_ALIAS`)
+- `-keystore my-release.jks` — output filename for the keystore
+- `-storepass yourpassword` — password to open the keystore file (this becomes `KEY_STORE_PASSWORD`)
+- `-keypass yourpassword` — password for the key itself, usually the same as storepass (this becomes `KEY_PASSWORD`)
+- `-validity 10000` — validity in days (~27 years)
+
+#### Step 2: Encode the .jks file as base64
+
+GitHub Secrets only store text, so encode the binary .jks file as a string:
+
+```bash
+base64 -i my-release.jks | pbcopy     # macOS (result copied to clipboard automatically)
+base64 -w 0 my-release.jks            # Linux (copy the output manually)
+```
+
+#### Step 3: Add GitHub Secrets
+
+Go to **Settings → Secrets and variables → Actions → New repository secret** and add:
+
+| Secret | Value to enter | Description |
+|---|---|---|
+| `KEYSTORE_BASE64` | Output from the base64 command above | The encoded .jks file — a long string of letters and numbers |
+| `KEY_STORE_PASSWORD` | Your `-storepass` value | Password to open the keystore |
+| `KEY_ALIAS` | Your `-alias` value | Name of the key, e.g. `mykey` |
+| `KEY_PASSWORD` | Your `-keypass` value | Password for the key itself, usually the same as `KEY_STORE_PASSWORD` |
+
+> ⚠️ Back up your `.jks` file and passwords in a safe place (e.g. a password manager). Every future update must be signed with the same keystore — if you lose it, you will never be able to publish updates to the same app.
 
 ---
 
